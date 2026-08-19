@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* GP - 19-08-2026 code comment - Main styling defaults and variables */
+:root {
+  --primary: #6366F1;
+  --primary-hover: #4f46e5;
+  --dark: #111827;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --border: #E5E7EB;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar for modern dashboards */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Micro-animations and hover transitions */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.1), 0 4px 6px -2px rgba(99, 102, 241, 0.05);
+}
+
+/* Glassmorphism for modern header and cards */
+.glass-header {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.6);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+}
+
+/* Custom visual price animation for the Landing Page */
+@keyframes priceTransition {
+  0%, 30% {
+    content: "$49";
+    color: #111827;
+    text-decoration: none;
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.95);
+  }
+  40%, 80% {
+    content: "$59";
+    color: #EF4444;
+    transform: scale(1.08);
+  }
+  85%, 100% {
+    content: "$49";
+    color: #111827;
+    transform: scale(1);
+  }
+}
+
+.price-anim::after {
+  content: "$49";
+  animation: priceTransition 8s infinite ease-in-out;
+  display: inline-block;
+  font-weight: 700;
+}
+
+@keyframes strikeThrough {
+  0%, 30% {
+    width: 0%;
+    opacity: 0;
+  }
+  40%, 80% {
+    width: 100%;
+    opacity: 1;
+  }
+  85%, 100% {
+    width: 0%;
+    opacity: 0;
+  }
+}
+
+.strike-anim {
+  position: relative;
+}
+.strike-anim::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: #EF4444;
+  animation: strikeThrough 8s infinite ease-in-out;
+}
+
+@keyframes badgePulse {
+  0%, 30% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.9);
+  }
+  40%, 80% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  85%, 100% {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.95);
+  }
+}
+
+.badge-anim {
+  animation: badgePulse 8s infinite ease-in-out;
+}
+
+/* Toast animations */
+@keyframes toastSlideIn {
+  from {
+    transform: translateY(1rem) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.toast-enter {
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Dot grid background for landing page hero */
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image: 
+    radial-gradient(circle, #E2E8F0 1px, transparent 1px);
+}
