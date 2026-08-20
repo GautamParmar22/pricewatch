@@ -25,15 +25,15 @@ class DatabaseSeeder extends Seeder
         
         // 1. Create Workspace
         $owner = User::create([
-            'name' => 'John Doe',
-            'email' => 'owner@pricewatch.com',
-            'password' => bcrypt('password123'),
+            'name' => 'Gautam Parmar',
+            'email' => 'gautam@parextech.com',
+            'password' => bcrypt('123456'),
         ]);
 
         $member1 = User::create([
-            'name' => 'Sarah Connor',
-            'email' => 'sarah@pricewatch.com',
-            'password' => bcrypt('password123'),
+            'name' => 'Yash Bodar',
+            'email' => 'yash@parextech.com',
+            'password' => bcrypt('123456'),
         ]);
 
         $member2 = User::create([

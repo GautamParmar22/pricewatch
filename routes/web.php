@@ -10,6 +10,7 @@ use App\Livewire\ChangesLog;
 use App\Livewire\CompetitorList;
 use App\Livewire\Dashboard;
 use App\Livewire\PriceHistoryChart;
+use App\Livewire\ScraperDevTools;
 use Illuminate\Support\Facades\Route;
 
 // GP - 19-08-2026 code comment - Pricing platform web routing map
@@ -56,4 +57,7 @@ Route::middleware(['auth', \App\Http\Middleware\ScopeWorkspace::class])->group(f
     
     // Billing meters and subscriptions switcher
     Route::get('/billing', BillingManager::class)->name('billing.index');
+
+    // GP - 20-08-2026 code comment - Scraper development testing tools
+    Route::get('/dev-scraper', ScraperDevTools::class)->name('dev.scraper');
 });
