@@ -33,17 +33,17 @@ class PricingExtractorService implements PricingExtractorInterface
         $xpath = new \DOMXPath($dom);
 
         // Common plan naming indicators
-        $tierNames = ['free', 'starter', 'basic', 'pro', 'professional', 'growth', 'business', 'enterprise', 'startup', 'agency', 'team', 'developer'];
+        $tierNames = ['free', 'starter', 'basic', 'pro', 'professional', 'growth', 'business', 'enterprise', 'startup', 'agency', 'team', 'developer', 'silver', 'gold', 'platinum', 'bronze', 'standard', 'custom', 'personal', 'advanced', 'plus', 'premium'];
 
         // Let's find all headers (h2, h3, h4) representing pricing cards
-        $headers = $xpath->query('//h1 | //h2 | //h3 | //h4 | //h5 | //strong | //span[contains(@class, "title") or contains(@class, "name")]');
+        $headers = $xpath->query('//h1 | //h2 | //h3 | //h4 | //h5 | //strong | //span[contains(@class, "title") or contains(@class, "name") or contains(@class, "h1") or contains(@class, "h2") or contains(@class, "h3") or contains(@class, "h4") or contains(@class, "h5")] | //div[contains(@class, "title") or contains(@class, "name") or contains(@class, "h1") or contains(@class, "h2") or contains(@class, "h3") or contains(@class, "h4") or contains(@class, "h5")]');
         
         foreach ($headers as $header) {
             $text = trim($header->nodeValue);
             $cleanText = strtolower($text);
 
             // If header name matches common tier names, let's look for pricing around it
-            if (in_array($cleanText, $tierNames) || (strlen($text) > 2 && strlen($text) < 25 && preg_match('/^(free|basic|pro|growth|enterprise|business|starter|team|premium)/i', $text))) {
+            if (in_array($cleanText, $tierNames) || (strlen($text) > 2 && strlen($text) < 25 && preg_match('/^(free|basic|pro|growth|enterprise|business|starter|team|premium|silver|gold|platinum|bronze|standard|plus|advanced|desktop|custom)\b/i', $text))) {
                 
                 // Let's navigate up to find container parent element
                 $parent = $header->parentNode;
@@ -63,6 +63,12 @@ class PricingExtractorService implements PricingExtractorInterface
                 $parentContext = $parent ?: $header->parentNode;
                 $contextText = $parentContext ? $parentContext->nodeValue : '';
                 
+                // If context contains multiple distinct prices, it's too broad. Scope it to the header's parent.
+                if ($parent && preg_match_all('/(?:[\$\€\£]|usd|eur|gbp)\s*\d+/i', $contextText, $priceMatches) && count($priceMatches[0]) > 1) {
+                    $parentContext = $header->parentNode;
+                    $contextText = $parentContext ? $parentContext->nodeValue : '';
+                }
+                
                 // Search for prices in the parent container
                 $price = $this->extractPrice($contextText);
                 $features = $this->extractFeatures($parentContext, $xpath);
@@ -70,7 +76,7 @@ class PricingExtractorService implements PricingExtractorInterface
 
                 $plans[] = [
                     'name' => ucfirst($text),
-                    'slug' => Str::slug($text),
+                    'slug' => Str::slug(str_replace('+', ' plus', $text)),
                     'monthly_price' => $price['monthly'] ?? null,
                     'annual_price' => $price['annual'] ?? null,
                     'currency' => $price['currency'] ?? 'USD',
@@ -118,6 +124,20 @@ class PricingExtractorService implements PricingExtractorInterface
         // Match currency signs
         if (str_contains($text, '€')) $result['currency'] = 'EUR';
         elseif (str_contains($text, '£')) $result['currency'] = 'GBP';
+
+        // Prioritized match: Price with direct billing period word next to it (e.g. $15 / Month or $15/mo)
+        if (preg_match('/(?:[\$\€\£]|usd|eur|gbp)\s*(\d{1,5}(?:\.\d{2})?)\s*(?:\/|\s+per\s+|\s+a\s*)?\s*(month|mo|year|yr|annually|monthly|yearly)/i', $text, $match)) {
+            $p = floatval($match[1]);
+            if (preg_match('/(year|yr|annually|yearly)/i', $match[2])) {
+                $result['annual'] = $p;
+            } else {
+                $result['monthly'] = $p;
+            }
+            if ($result['monthly'] !== null && $result['annual'] === null) {
+                $result['annual'] = $result['monthly'] * 10;
+            }
+            return $result;
+        }
 
         // Match price patterns like $49, $99/mo, $990/year, etc.
         // Let's find all instances of digits following a currency symbol or word

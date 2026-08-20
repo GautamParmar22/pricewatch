@@ -45,6 +45,23 @@ class ScrapingService
             if ($response->redirect()) {
                 $redirectUrl = $response->header('Location');
                 
+                // Resolve relative redirect URL to absolute
+                if ($redirectUrl && !preg_match('/^https?:\/\//i', $redirectUrl)) {
+                    $originalParts = parse_url($url);
+                    $scheme = $originalParts['scheme'] ?? 'https';
+                    $host = $originalParts['host'] ?? '';
+                    $port = isset($originalParts['port']) ? ':' . $originalParts['port'] : '';
+                    
+                    if (str_starts_with($redirectUrl, '/')) {
+                        $redirectUrl = "{$scheme}://{$host}{$port}{$redirectUrl}";
+                    } else {
+                        $path = $originalParts['path'] ?? '/';
+                        $dir = dirname($path);
+                        $dir = $dir === '\\' || $dir === '/' ? '/' : $dir . '/';
+                        $redirectUrl = "{$scheme}://{$host}{$port}{$dir}{$redirectUrl}";
+                    }
+                }
+                
                 // Validate redirect URL safety
                 if (!$redirectUrl || !$this->isUrlSafe($redirectUrl)) {
                     return [
